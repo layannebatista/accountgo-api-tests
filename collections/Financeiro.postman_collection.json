@@ -1,0 +1,1427 @@
+{
+  "info": {
+    "_postman_id": "d3b10878-59de-4978-8fc6-5a7dcb635359",
+    "name": "Financeiro",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51411458",
+    "_collection_link": "https://go.postman.co/collection/51411458-d3b10878-59de-4978-8fc6-5a7dcb635359?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Fluxo Completo",
+      "item": [
+        {
+          "name": "1 - Criar Lançamento para Postar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lançamento criado com sucesso\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.statusCode).to.eql(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Lançamento para teste de fluxo completo\",\r\n  \"ReferenceNo\": \"REF-FLUXO-001\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito Accounts Receivable\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito Sales A/C\"\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Financials",
+                "SaveJournalEntry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2 - Buscar Último Lançamento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lista não está vazia\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "// Pega o último lançamento da lista e salva o ID\r",
+                  "var jsonData = pm.response.json();\r",
+                  "var ultimoLancamento = jsonData[jsonData.length - 1];\r",
+                  "pm.environment.set(\"novo_journal_id\", ultimoLancamento.id);\r",
+                  "console.log(\"Último lançamento ID: \" + ultimoLancamento.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Financials/JournalEntries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Financials",
+                "JournalEntries"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3 - Verificar Lançamento Não Postado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lançamento existe\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"novo_journal_id\"));\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lançamento ainda não está postado\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.posted).to.eql(false);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Financials/JournalEntry?id={{novo_journal_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Financials",
+                "JournalEntry"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{novo_journal_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4 - Postar Lançamento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lançamento postado com sucesso\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.statusCode).to.eql(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Id\": {{novo_journal_id}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Financials/PostJournalEntry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Financials",
+                "PostJournalEntry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5 - Confirmar Lançamento Postado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Lançamento está postado\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.posted).to.eql(true);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"ID do lançamento está correto\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"novo_journal_id\"));\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Débito e crédito estão corretos\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.debitAmount).to.eql(jsonData.creditAmount);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Financials/JournalEntry?id={{novo_journal_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Financials",
+                "JournalEntry"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{novo_journal_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna o email do usuário\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.email).to.eql(\"admin@accountgo.ph\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna o id do usuário\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.id).to.not.be.empty;\r",
+              "});\r",
+              "var jsonData = pm.response.json();\r",
+              "pm.environment.set(\"user_id\", jsonData.id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"Email\": \"admin@accountgo.ph\",\r\n  \"Password\": \"P@ssword1\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Account/SignIn",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Account",
+            "SignIn"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Lista o Plano de Contas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Plano de contas não está vazio\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas têm id e nome\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountName\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Common/PostingAccounts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Common",
+            "PostingAccounts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Lista todos os Lançamentos Contábeis",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lançamentos têm id e data\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    if (jsonData.length > 0) {\r",
+              "        pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+              "        pm.expect(jsonData[0]).to.have.property(\"journalDate\");\r",
+              "    }\r",
+              "});\r",
+              "\r",
+              "// Salva o id do primeiro lançamento para usar depois\r",
+              "var jsonData = pm.response.json();\r",
+              "if (jsonData.length > 0) {\r",
+              "    pm.environment.set(\"journal_id\", jsonData[0].id);\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/JournalEntries",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "JournalEntries"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Busca um Lançamento específico",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Estrutura completa do lançamento\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"id\");\r",
+              "    pm.expect(jsonData).to.have.property(\"journalDate\");\r",
+              "    pm.expect(jsonData).to.have.property(\"memo\");\r",
+              "    pm.expect(jsonData).to.have.property(\"referenceNo\");\r",
+              "    pm.expect(jsonData).to.have.property(\"voucherType\");\r",
+              "    pm.expect(jsonData).to.have.property(\"posted\");\r",
+              "    pm.expect(jsonData).to.have.property(\"debitAmount\");\r",
+              "    pm.expect(jsonData).to.have.property(\"creditAmount\");\r",
+              "    pm.expect(jsonData).to.have.property(\"journalEntryLines\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Tipos dos campos estão corretos\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.id).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData.memo).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData.posted).to.be.a(\"boolean\");\r",
+              "    pm.expect(jsonData.debitAmount).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData.creditAmount).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData.journalEntryLines).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lançamento tem id correto\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"journal_id\"));\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lançamento tem linhas de débito e crédito\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.journalEntryLines.length).to.be.at.least(2);\r",
+              "});\r",
+              "pm.test(\"Débito e crédito são iguais\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.debitAmount).to.eql(jsonData.creditAmount);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lançamento tem pelo menos uma linha de débito\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var debitos = jsonData.journalEntryLines.filter(line => line.drCr === 1);\r",
+              "    pm.expect(debitos.length).to.be.at.least(1);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lançamento tem pelo menos uma linha de crédito\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var creditos = jsonData.journalEntryLines.filter(line => line.drCr === 2);\r",
+              "    pm.expect(creditos.length).to.be.at.least(1);\r",
+              "});\r",
+              "pm.test(\"Tempo de resposta menor que 500ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/JournalEntry?id={{journal_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "JournalEntry"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{journal_id}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar ou Editar um Lançamento",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retornou sucesso\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.statusCode).to.eql(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste de lançamento\",\r\n  \"ReferenceNo\": \"REF-001\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito Accounts Receivable\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito Sales A/C\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login com senha errada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login com senha errada retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna succeeded false\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.succeeded).to.eql(false);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Usuário não está bloqueado\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.isLockedOut).to.eql(false);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Email\": \"admin@accountgo.ph\",\r\n    \"Password\": \"senhaerrada123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Account/SignIn",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Account",
+            "SignIn"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login com email inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login com email inexistente retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna succeeded false\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.succeeded).to.eql(false);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Email\": \"naoexiste@email.com\",\r\n    \"Password\": \"qualquersenha\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Account/SignIn",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Account",
+            "SignIn"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento com contas duplicadas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento com contas duplicadas retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de conta duplicada\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"One or more journal entry lines has duplicate account.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste conta duplicada\",\r\n  \"ReferenceNo\": \"REF-002\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito\"\r\n    },\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Postar lançamento já postado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Postar lançamento já postado retorna 409\", function () {\r",
+              "    pm.response.to.have.status(409);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de lançamento já postado\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"Journal entry with id 4 is already posted.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Id\": 4\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/PostJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "PostJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento sem linhas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento sem linhas retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de linhas obrigatórias\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"At least one journal entry line is required.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste sem linhas\",\r\n  \"ReferenceNo\": \"REF-003\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": []\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento sem data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento sem data retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de data obrigatória\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"JournalDate is required.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"Memo\": \"Teste sem data\",\r\n  \"ReferenceNo\": \"REF-004\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": 1000.00,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Buscar lançamento com ID inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Buscar ID inexistente retorna 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro descritiva\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"Journal entry with id 99999 was not found.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/JournalEntry?id=99999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "JournalEntry"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "99999"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento com valor zerado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento com valor zerado retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de valor inválido\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"Each journal entry line must have AccountId > 0, Amount > 0 and DrCr of 1 (Dr) or 2 (Cr).\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste valor zerado\",\r\n  \"ReferenceNo\": \"REF-005\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 0,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito zerado\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": 0,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito zerado\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento com valor negativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento com valor negativo retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de valor inválido\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"Each journal entry line must have AccountId > 0, Amount > 0 and DrCr of 1 (Dr) or 2 (Cr).\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste valor negativo\",\r\n  \"ReferenceNo\": \"REF-006\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": -1000,\r\n      \"DrCr\": 1,\r\n      \"Memo\": \"Débito negativo\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": -1000,\r\n      \"DrCr\": 2,\r\n      \"Memo\": \"Crédito negativo\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento com DrCr inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento com DrCr inválido retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de DrCr inválido\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"Each journal entry line must have AccountId > 0, Amount > 0 and DrCr of 1 (Dr) or 2 (Cr).\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"JournalDate\": \"2026-05-29\",\r\n  \"Memo\": \"Teste DrCr inválido\",\r\n  \"ReferenceNo\": \"REF-007\",\r\n  \"VoucherType\": 1,\r\n  \"JournalEntryLines\": [\r\n    {\r\n      \"AccountId\": 6,\r\n      \"Amount\": 1000,\r\n      \"DrCr\": 99,\r\n      \"Memo\": \"DrCr inválido\"\r\n    },\r\n    {\r\n      \"AccountId\": 54,\r\n      \"Amount\": 1000,\r\n      \"DrCr\": 99,\r\n      \"Memo\": \"DrCr inválido\"\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Criar lançamento com body vazio",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Lançamento com body vazio retorna 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna mensagem de erro de data obrigatória\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.eql(\"JournalDate is required.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/Financials/SaveJournalEntry",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "SaveJournalEntry"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Lista Contas Bancárias",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de contas bancárias\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas bancárias têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"name\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountNo\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"bankName\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Tipos dos campos estão corretos\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0].id).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData[0].name).to.be.a(\"string\");\r",
+              "});\r",
+              "\r",
+              "// Salva o id do banco para usar em outros testes\r",
+              "pm.environment.set(\"bank_id\", pm.response.json()[0].id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/CashBanks",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "CashBanks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Razão Geral",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de transações\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Cada transação tem groupId e linhas filhas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"groupId\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"childMasterGeneralLedger\");\r",
+              "    pm.expect(jsonData[0].childMasterGeneralLedger).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Linhas filhas têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var primeiraLinha = jsonData[0].childMasterGeneralLedger[0];\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"id\");\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"accountName\");\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"accountCode\");\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"debit\");\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"credit\");\r",
+              "    pm.expect(primeiraLinha).to.have.property(\"date\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Cada transação tem pelo menos 2 linhas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0].childMasterGeneralLedger.length).to.be.at.least(2);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/GeneralLedger",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "GeneralLedger"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Balancete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de contas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountId\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountCode\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountName\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"debit\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"credit\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Tipos dos campos estão corretos\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0].accountId).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData[0].accountCode).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData[0].accountName).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData[0].debit).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData[0].credit).to.be.a(\"number\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Total de débitos igual ao total de créditos\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var totalDebito = jsonData.reduce((sum, conta) => sum + conta.debit, 0);\r",
+              "    var totalCredito = jsonData.reduce((sum, conta) => sum + conta.credit, 0);\r",
+              "    pm.expect(totalDebito).to.eql(totalCredito);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/TrialBalance",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "TrialBalance"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Balanço Patrimonial",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de contas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountId\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountClassId\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountCode\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountName\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"amount\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Balanço tem as três classes de contas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var ativos = jsonData.filter(c => c.accountClassId === 1);\r",
+              "    var passivos = jsonData.filter(c => c.accountClassId === 2);\r",
+              "    var patrimonio = jsonData.filter(c => c.accountClassId === 3);\r",
+              "    pm.expect(ativos.length).to.be.above(0);\r",
+              "    pm.expect(passivos.length).to.be.above(0);\r",
+              "    pm.expect(patrimonio.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas a Receber tem saldo positivo\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var contaReceber = jsonData.find(c => c.accountName === \"Accounts Receivable\");\r",
+              "    pm.expect(contaReceber.amount).to.be.above(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/BalanceSheet",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "BalanceSheet"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DRE - Demonstração de Resultado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de contas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Contas têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountId\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountCode\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"accountName\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"amount\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"isExpense\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"DRE tem receitas e despesas\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var receitas = jsonData.filter(c => c.isExpense === false);\r",
+              "    var despesas = jsonData.filter(c => c.isExpense === true);\r",
+              "    pm.expect(receitas.length).to.be.above(0);\r",
+              "    pm.expect(despesas.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Conta de Vendas tem receita positiva\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var vendas = jsonData.find(c => c.accountName === \"Sales A/C\");\r",
+              "    pm.expect(vendas.amount).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Lucro líquido calculado corretamente\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var totalReceitas = jsonData\r",
+              "        .filter(c => c.isExpense === false)\r",
+              "        .reduce((sum, c) => sum + c.amount, 0);\r",
+              "    var totalDespesas = jsonData\r",
+              "        .filter(c => c.isExpense === true)\r",
+              "        .reduce((sum, c) => sum + c.amount, 0);\r",
+              "    var lucroLiquido = totalReceitas - totalDespesas;\r",
+              "    pm.expect(lucroLiquido).to.be.above(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Financials/IncomeStatement",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Financials",
+            "IncomeStatement"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

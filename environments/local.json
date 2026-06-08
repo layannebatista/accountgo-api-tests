@@ -1,0 +1,17 @@
+{
+  "id": "local-environment",
+  "name": "Local",
+  "values": [
+    { "key": "base_url", "value": "http://localhost:8001", "enabled": true },
+    { "key": "user_id", "value": "c2a1983a-6e3f-40a2-b141-0a4e827af44e", "enabled": true },
+    { "key": "journal_id", "value": "3", "enabled": true },
+    { "key": "novo_journal_id", "value": "1664", "enabled": true },
+    { "key": "bank_id", "value": "1", "enabled": true },
+    { "key": "quotation_id", "value": "3", "enabled": true },
+    { "key": "sales_order_id", "value": "3", "enabled": true },
+    { "key": "sales_invoice_id", "value": "2", "enabled": true },
+    { "key": "receipt_id", "value": "2", "enabled": true },
+    { "key": "customer_id", "value": "1", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

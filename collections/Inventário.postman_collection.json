@@ -1,0 +1,30 @@
+{
+  "info": {
+    "_postman_id": "17301580-00d5-492f-9cd5-c233ab884c92",
+    "name": "Inventário",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51411458",
+    "_collection_link": "https://go.postman.co/collection/51411458-17301580-00d5-492f-9cd5-c233ab884c92?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Itens",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Inventory/Items",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Inventory",
+            "Items"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

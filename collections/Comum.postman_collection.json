@@ -1,0 +1,49 @@
+{
+  "info": {
+    "_postman_id": "6bae2cc9-4e80-4db5-8880-f6ff193eae69",
+    "name": "Comum",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51411458",
+    "_collection_link": "https://go.postman.co/collection/51411458-6bae2cc9-4e80-4db5-8880-f6ff193eae69?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Termos de pagamento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Common/PaymentTerms",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Common",
+            "PaymentTerms"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Medidas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Common/Measurements",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Common",
+            "Measurements"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

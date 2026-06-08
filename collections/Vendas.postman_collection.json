@@ -1,0 +1,627 @@
+{
+  "info": {
+    "_postman_id": "08b383f8-be2a-4311-9e6e-490217e1f77f",
+    "name": "Vendas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51411458",
+    "_collection_link": "https://go.postman.co/collection/51411458-08b383f8-be2a-4311-9e6e-490217e1f77f?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Fluxo de Vendas",
+      "item": [
+        {
+          "name": "1 - Criar Cotação",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Cotação criada com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"customerId\": 1,\r\n    \"quotationDate\": \"2026-05-29\",\r\n    \"referenceNo\": \"COT-001\",\r\n    \"paymentTermId\": 1,\r\n    \"salesQuotationLines\": [\r\n        {\r\n            \"itemId\": 2,\r\n            \"measurementId\": 1,\r\n            \"quantity\": 5,\r\n            \"amount\": 100.00,\r\n            \"discount\": 0\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SaveQuotation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SaveQuotation"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2 - Buscar Última Cotação",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Retorna lista de cotações\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Cotações têm campos obrigatórios\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"customerId\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"statusId\");\r",
+                  "});\r",
+                  "\r",
+                  "// Salva o id da última cotação\r",
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"quotation_id\", jsonData[0].id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Sales/Quotations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "Quotations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3 - Converter Cotação em Pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Pedido criado com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"customerId\": 1,\r\n    \"orderDate\": \"2026-05-29\",\r\n    \"referenceNo\": \"PED-001\",\r\n    \"paymentTermId\": 1,\r\n    \"quotationId\": {{quotation_id}},\r\n    \"salesOrderLines\": [\r\n        {\r\n            \"itemId\": 2,\r\n            \"measurementId\": 1,\r\n            \"quantity\": 5,\r\n            \"amount\": 100.00,\r\n            \"discount\": 0\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SaveSalesOrder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SaveSalesOrder"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4 - Buscar Último Pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Retorna lista de pedidos\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Pedidos têm campos obrigatórios\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"customerId\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"statusId\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"salesOrderLines\");\r",
+                  "});\r",
+                  "\r",
+                  "// Salva o id do último pedido\r",
+                  "var jsonData = pm.response.json();\r",
+                  "var ultimoPedido = jsonData[jsonData.length - 1];\r",
+                  "pm.environment.set(\"sales_order_id\", ultimoPedido.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SalesOrders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SalesOrders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5 - Criar Nota Fiscal do Pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal criada com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"customerId\": 1,\r\n    \"invoiceDate\": \"2026-05-29\",\r\n    \"referenceNo\": \"NF-001\",\r\n    \"paymentTermId\": 1,\r\n    \"fromSalesOrderId\": {{sales_order_id}},\r\n    \"salesInvoiceLines\": [\r\n        {\r\n            \"itemId\": 2,\r\n            \"measurementId\": 1,\r\n            \"quantity\": 5,\r\n            \"amount\": 100.00,\r\n            \"discount\": 0\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SaveSalesInvoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SaveSalesInvoice"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6 - Buscar Última Nota Fiscal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Retorna lista de notas fiscais\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Notas fiscais têm campos obrigatórios\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"customerId\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"posted\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal ainda não está postada\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var ultimaNF = jsonData[jsonData.length - 1];\r",
+                  "    pm.expect(ultimaNF.posted).to.eql(false);\r",
+                  "});\r",
+                  "\r",
+                  "// Salva o id da última nota fiscal\r",
+                  "var jsonData = pm.response.json();\r",
+                  "var ultimaNF = jsonData[jsonData.length - 1];\r",
+                  "pm.environment.set(\"sales_invoice_id\", ultimaNF.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SalesInvoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SalesInvoices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7 - Postar Nota Fiscal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal postada com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Id\": {{sales_invoice_id}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/PostSalesInvoice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "PostSalesInvoice"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8 - Confirmar Nota Fiscal Postada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal está postada\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.posted).to.eql(true);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal tem linhas\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.salesInvoiceLines).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.salesInvoiceLines.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Nota fiscal pertence ao cliente correto\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.customerId).to.eql(1);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SalesInvoice?id={{sales_invoice_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SalesInvoice"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{sales_invoice_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9 - Registrar Recebimento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Recebimento registrado com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"CustomerId\": 1,\r\n    \"ReceiptDate\": \"2026-05-29T00:00:00\",\r\n    \"AccountToDebitId\": 1,\r\n    \"AccountToCreditId\": 35,\r\n    \"Amount\": 500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SaveReceipt",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SaveReceipt"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10 - Buscar Último Recebimento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Retorna lista de recebimentos\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"array\");\r",
+                  "    pm.expect(jsonData.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Recebimentos têm campos obrigatórios\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"customerId\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"amount\");\r",
+                  "    pm.expect(jsonData[0]).to.have.property(\"remainingAmountToAllocate\");\r",
+                  "});\r",
+                  "\r",
+                  "// Salva o id do último recebimento\r",
+                  "var jsonData = pm.response.json();\r",
+                  "var ultimoRecebimento = jsonData[jsonData.length - 1];\r",
+                  "pm.environment.set(\"receipt_id\", ultimoRecebimento.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SalesReceipts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SalesReceipts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11 - Alocar Recebimento na Nota Fiscal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Alocação realizada com sucesso\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"CustomerId\": 1,\r\n    \"Date\": \"2026-05-29T00:00:00\",\r\n    \"ReceiptId\": {{receipt_id}},\r\n    \"AllocationLines\": [\r\n        {\r\n            \"InvoiceId\": {{sales_invoice_id}},\r\n            \"AmountToAllocate\": 500.00\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/Sales/SaveAllocation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "Sales",
+                "SaveAllocation"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Retorna uma lista de clientes\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    pm.expect(jsonData.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Clientes têm campos obrigatórios\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"id\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"name\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"no\");\r",
+              "    pm.expect(jsonData[0]).to.have.property(\"balance\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Tipos dos campos estão corretos\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData[0].id).to.be.a(\"number\");\r",
+              "    pm.expect(jsonData[0].name).to.be.a(\"string\");\r",
+              "    pm.expect(jsonData[0].balance).to.be.a(\"number\");\r",
+              "});\r",
+              "\r",
+              "// Salva o id do primeiro cliente\r",
+              "pm.environment.set(\"customer_id\", pm.response.json()[0].id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/Sales/Customers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "Sales",
+            "Customers"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
